@@ -308,6 +308,10 @@ class QuerySet(object):
         :param key_or_list: a single index key or a list of index keys (to
             construct a multi-field index); keys may be prefixed with a **+**
             or a **-** to determine the index ordering
+        :param drop_dupes: if True, drop duplicates when creating a unique
+            index
+        :param background: if True, create the index (if necessary) as a
+            background operation
         """
         index_list = QuerySet._build_index_spec(self._document, key_or_list)
         self._collection.ensure_index(index_list, drop_dups=drop_dups,
