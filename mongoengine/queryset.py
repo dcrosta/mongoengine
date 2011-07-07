@@ -447,6 +447,11 @@ class QuerySet(object):
         """Lookup a field based on its attribute and return a list containing
         the field's parents and the field.
         """
+        from fields import ListField
+        class ListIndexField(object):
+            def __init__(self, db_field):
+                self.db_field = db_field
+
         if not isinstance(parts, (list, tuple)):
             parts = [parts]
         fields = []
@@ -459,6 +464,12 @@ class QuerySet(object):
                     field_name = document._meta['id_field']
                 field = document._fields[field_name]
             else:
+                if isinstance(field, ListField) and field_name.isdigit():
+                    # insert a fake field into the output,
+                    # with db_field set to field_name
+                    fields.append(ListIndexField(field_name))
+                    # don't update field after doing this
+                    continue
                 # Look up subfield on the previous field
                 field = field.lookup_member(field_name)
                 if field is None:
