@@ -193,6 +193,20 @@ class Document(BaseDocument):
         reset_changed_fields(self)
         signals.post_save.send(self.__class__, document=self, created=created)
 
+    def update(self, safe_update=True, **kwargs):
+        """Perform an atomic update on the fields matched by the query.
+        Accepts the same arguments as :meth:`~mongoengine.QuerySet.update`,
+        except `upsert` (which is always set to `False`). Raises
+        :class:`RuntimeError` if called on an object that has not yet been
+        saved.
+        """
+        if not self.pk:
+            raise RuntimeError('attempt to update a document not yet saved')
+
+        kwargs.pop('upsert', None)
+        kwargs.update(safe_update=safe_update)
+        return self.__class__.objects(pk=self.pk).update(**kwargs)
+
     def delete(self, safe=False):
         """Delete the :class:`~mongoengine.Document` from the database. This
         will only take effect if the document has been previously saved.
