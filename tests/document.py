@@ -935,6 +935,39 @@ class DocumentTest(unittest.TestCase):
         self.assertEqual(person.name, "Mr Test User")
         self.assertEqual(person.age, 21)
 
+    def test_reload_with_only(self):
+        """Ensure that selected attributes may be reloaded.
+        """
+        person = self.Person(name="Test User", age=20)
+        person.save()
+
+        person_obj = self.Person.objects.first()
+        person_obj.name = "Mr Test User"
+        person_obj.age = 21
+        person_obj.save()
+
+        self.assertEqual(person.name, "Test User")
+        self.assertEqual(person.age, 20)
+
+        person.reload(only='name')
+        self.assertEqual(person.name, "Mr Test User")
+        # we only reloaded name, so age
+        # will not have been updated
+        self.assertEqual(person.age, 20)
+
+        # ensure that reload(only=...) works with
+        # multiple fields as well
+        person_obj.name = "Mrs Test User"
+        person_obj.save()
+        person.reload(only=['name', 'age'])
+        self.assertEqual(person.name, "Mrs Test User")
+        self.assertEqual(person.age, 21)
+
+        # reload(only=...) with fields that don't exist
+        # for the model raises
+        # FIXME: use a more specific exception
+        self.assertRaises(KeyError, person.reload, only=['not_a_field'])
+
     def test_reload_referencing(self):
         """Ensures reloading updates weakrefs correctly
         """

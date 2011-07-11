@@ -216,15 +216,25 @@ class Document(BaseDocument):
         self._data = dereference(self._data, max_depth)
         return self
 
-    def reload(self):
+    def reload(self, only=None):
         """Reloads all attributes from the database.
 
+        :param only: if set to a field name, or a list or tuple
+            of field names, only the named fields are reloaded
+
         .. versionadded:: 0.1.2
+        .. versionchanged:: 0.5 Added *only* argument
         """
         id_field = self._meta['id_field']
-        obj = self.__class__.objects(**{id_field: self[id_field]}).first()
+        obj = self.__class__.objects(**{id_field: self[id_field]})
+        if only and type(only) in (str, unicode, list, tuple):
+            if type(only) in (str, unicode):
+                only = [only]
+            obj = obj.only(*only)
+        obj = obj.first()
         for field in self._fields:
-            setattr(self, field, self._reload(field, obj[field]))
+            if not only or field in only:
+                setattr(self, field, self._reload(field, obj[field]))
         self._changed_fields = []
 
     def _reload(self, key, value):
