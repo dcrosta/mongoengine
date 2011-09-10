@@ -2364,8 +2364,6 @@ class DocumentTest(unittest.TestCase):
         User2.objects.create(name='geoff', email='a@b.com')
 
         u2 = User2(name='frank', email='a@b.com')
-        import pdb
-        pdb.set_trace()
         self.assertRaises(OperationError, u2.save, safe=True)
 
         self.assertEquals('geoff', User2.objects.get(email='a@b.com').name)
