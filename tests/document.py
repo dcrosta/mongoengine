@@ -2345,6 +2345,31 @@ class DocumentTest(unittest.TestCase):
 
         self.assertRaises(InvalidDocumentError, throw_invalid_document_error)
 
+    def test_primary_key(self):
+        class User(Document):
+            name = StringField()
+            email = StringField(unique=True)
+        User.drop_collection()
+
+        User.objects.create(name='geoff', email='a@b.com')
+
+        u = User(name='frank', email='a@b.com')
+        self.assertRaises(OperationError, u.save)
+
+        class User2(Document):
+            name = StringField()
+            email = StringField(primary_key=True)
+        User2.drop_collection()
+
+        User2.objects.create(name='geoff', email='a@b.com')
+
+        u2 = User2(name='frank', email='a@b.com')
+        import pdb
+        pdb.set_trace()
+        self.assertRaises(OperationError, u2.save, safe=True)
+
+        self.assertEquals('geoff', User2.objects.get(email='a@b.com').name)
+
 
 if __name__ == '__main__':
     unittest.main()
